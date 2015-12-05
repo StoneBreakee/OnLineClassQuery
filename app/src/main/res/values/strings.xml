@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">OnLineClassQuery</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_query_class_by_teacher">QueryClassByTeacher</string>
+    <string name="semester">S e m e s t e r:</string>
+    <string name="validateCode">Validate   Code:</string>
+    <string name="queryButton">Query</string>
+    <string name="SaveCourse">保存课表</string>
+    <string name="load_more_data">加载数据</string>
+    <array name="semestersText">
+        <item>2015-2016学年第一学期</item>
+        <item>2014-2015学年第二学期</item>
+        <item>2014-2015学年第一学期</item>
+        <item>2013-2014学年第二学期</item>
+        <item>2013-2014学年第一学期</item>
+        <item>2012-2013学年第二学期</item>
+        <item>2012-2013学年第一学期</item>
+        <item>2011-2012学年第二学期</item>
+        <item>2011-2012学年第一学期</item>
+        <item>2010-2011学年第二学期</item>
+        <item>2010-2011学年第一学期</item>
+    </array>
+</resources>

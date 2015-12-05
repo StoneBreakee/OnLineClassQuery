@@ -1,0 +1,121 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:padding="0dp"
+              tools:context="com.example.onlineclassquery.QueryClassByTeacher">
+
+    <!--Title 栏-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/titleName"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_weight="10"
+            android:background="@android:color/holo_blue_bright"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@android:color/holo_blue_bright"
+            android:onClick="saveCourse"
+            android:text="@string/SaveCourse"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
+    <!--查询课表栏-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.08">
+
+        <TextView
+            android:id="@+id/semtext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/semester"/>
+
+        <Spinner
+            android:id="@+id/semesters"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/semtext"
+            android:layout_toRightOf="@id/semtext"
+            android:textSize="10sp">
+        </Spinner>
+
+        <TextView
+            android:id="@+id/validateCodeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@id/semtext"
+            android:layout_below="@id/semtext"
+            android:layout_marginTop="20dp"
+            android:text="@string/validateCode"/>
+
+        <EditText
+            android:id="@+id/validateCodeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/validateCodeLabel"
+            android:layout_below="@id/semtext"
+            android:layout_toRightOf="@id/validateCodeLabel"
+            android:ems="6"
+            android:textSize="15sp"/>
+
+        <ImageView
+            android:id="@+id/validateCodeImg"
+            android:layout_width="55dp"
+            android:layout_height="20dp"
+            android:layout_alignBottom="@id/validateCodeLabel"
+            android:layout_alignTop="@id/validateCodeText"
+            android:layout_below="@id/semtext"
+            android:layout_toRightOf="@id/validateCodeText"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@id/validateCodeImg"
+            android:layout_below="@id/validateCodeLabel"
+            android:layout_toRightOf="@id/validateCodeLabel"
+            android:onClick="getClass"
+            android:text="@string/queryButton"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2">
+
+        <ViewFlipper
+            android:id="@+id/curriculum"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <include layout="@layout/curriculum_table_mon"/>
+
+            <include layout="@layout/curriculum_table_tue"/>
+
+            <include layout="@layout/curriculum_table_wen"/>
+
+            <include layout="@layout/curriculum_table_thu"/>
+
+            <include layout="@layout/curriculum_table_fri"/>
+
+            <include layout="@layout/curriculum_table_sat"/>
+
+            <include layout="@layout/curriculum_table_sun"/>
+        </ViewFlipper>
+    </RelativeLayout>
+</LinearLayout>
