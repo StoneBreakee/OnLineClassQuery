@@ -3,6 +3,7 @@ package com.example.onlineclassquery;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,7 +28,9 @@ import java.util.Map;
 public class MainActivity extends Activity {
     private HttpData httpData;
     private SearchView searchs;
-    private ListView teachersList;
+    private static ListView teachersList;
+
+    private MyBaseAdapter myBaseAdapter;
 
     private MyDbHelper myDbHelper;
     private DbUtils dbUtils;
@@ -37,7 +40,6 @@ public class MainActivity extends Activity {
     public MainActivity() {
         teacherListMap = new ArrayList<Map<String, String>>();
         httpData = new HttpData();
-        initTeachers();
     }
 
     @Override
@@ -46,6 +48,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         searchs = (SearchView) findViewById(R.id.searchTeachers);
         teachersList = (ListView) findViewById(R.id.listTeachers);
+        myDbHelper = new MyDbHelper(MainActivity.this, "Courses.db", null, 3);
+        initTeachers();
         initTeachersView();
         turnToQueryClass();
     }
@@ -77,8 +81,6 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 try {
-                    myDbHelper = new MyDbHelper(MainActivity.this, "Courses.db", null, 3);
-                    dbUtils = new DbUtils(myDbHelper);
                     SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
                     boolean isCached = sharedPreferences.getBoolean("isChachedTeachers", false);
                     if (!isCached) {
@@ -88,22 +90,14 @@ public class MainActivity extends Activity {
                         editor.putBoolean("isChachedTeachers", true);
                         editor.commit();
                         Log.i("lyj", "httpclient");
-                        while(true){
+                        while (true) {
                             teacherListMap = httpData.getTeacherListMap();
-                            if(teacherListMap.size() != 0){
+                            if (teacherListMap.size() != 0) {
                                 break;
                             }
                         }
                         getListFlag = true;
                     } else {
-                        dbUtils.queryAllTeachers();
-                        Log.i("lyj", "sqlite3");
-                        while(true){
-                            teacherListMap = dbUtils.getTeacherMap();
-                            if(teacherListMap.size() != 0){
-                                break;
-                            }
-                        }
                         getListFlag = true;
                     }
 
@@ -117,42 +111,45 @@ public class MainActivity extends Activity {
 
     //初始化老师LIstView列表
     private void initTeachersView() {
-        new Thread() {
+        new AsyncTask() {
             @Override
-            public void run() {
-                try {
-                    while(!getListFlag){
-                        Thread.sleep(1000);
-                    }
-                    Log.i("lyj","length="+teacherListMap.size());
-                    final SimpleAdapter teaAdapter = new SimpleAdapter(MainActivity.this, teacherListMap, R.layout.maplist_item, new String[]{"name", "id"}, new int[]{R.id.teachersName, R.id.teachersId});
-                    teachersList.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            teachersList.setAdapter(teaAdapter);
-                            Log.i("lyj","setAdapter");
-                            teachersList.setTextFilterEnabled(true);
-                            relateToListView();
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            protected Object doInBackground(Object[] objects) {
+                myDbHelper = new MyDbHelper(MainActivity.this, "Courses.db", null, 3);
+                dbUtils = new DbUtils(myDbHelper);
+                dbUtils.queryAllTeachers();
+                teacherListMap = dbUtils.getTeacherMap();
+                myBaseAdapter = new MyBaseAdapter(MainActivity.this, teacherListMap);
+                return null;
+            }
+
+            @Override
+            protected void onProgressUpdate(Object[] values) {
 
             }
-        }.start();
+
+            @Override
+            protected void onPostExecute(Object o) {
+                teachersList.setAdapter(myBaseAdapter);
+                Log.i("lyj", "myBaseAdapter.getCount()=" + myBaseAdapter.getCount());
+                teachersList.setTextFilterEnabled(true);
+                teachersList.setOnScrollListener(new ListViewOnScrollListener(myBaseAdapter,MainActivity.this));
+                relateToListView();
+            }
+        }.execute();
     }
 
     private void turnToQueryClass() {
         teachersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ViewGroup viewGroup = (ViewGroup) adapterView.getChildAt(i);
+                Log.i("lyj", "adapterView.count=" + adapterView.getCount() + ",i=" + i);
+                HashMap<String,String> teacherMap = (HashMap<String, String>) adapterView.getAdapter().getItem(i);
+                String id = teacherMap.get("id");
+                String name = teacherMap.get("name");
+                Log.i("lyj","id = "+id+",name = "+name);
                 Teacher teacher = new Teacher();
-                String tmp = ((TextView) viewGroup.getChildAt(0)).getText().toString();
-                teacher.setName(tmp);
-                tmp = ((TextView) viewGroup.getChildAt(1)).getText().toString();
-                teacher.setId(tmp);
+                teacher.setName(name);
+                teacher.setId(id);
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, QueryClassByTeacher.class);
                 intent.putExtra("teacher", teacher);
