@@ -35,25 +35,14 @@ public class CourseToServerService extends IntentService {
             String data = intent.getStringExtra("data");
             String semester = intent.getStringExtra("semester");
             String id = intent.getStringExtra("id");
-//            HttpData httpData = new HttpData();
-//            CloseableHttpClient httpClient = httpData.getInstance();
-//            HttpPost httpPost = new HttpPost("http://10.0.2.2:8080/MyAndroidServer/queryClass");
-//            List<NameValuePair> params = new ArrayList<NameValuePair>();
-//            params.add(new BasicNameValuePair("Sel_XNXQ",semester));
-//            params.add(new BasicNameValuePair("Sel_JS",id));
-//            params.add(new BasicNameValuePair("type", type));
-//            params.add(new BasicNameValuePair("data", data));
-//            UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(params,"GBK");
-//            httpPost.setEntity(urlEncodedFormEntity);
             HttpQueryClass httpQueryClass = new HttpQueryClass();
+            //由于httpclient在传送数据到pc端服务器时默认使用了contentType iso-8859-1
+            //所以使用字符格式转换，先在本地将gbk转为iso-8859-1
+            //在pc服务器端，再将iso-8859-1转化为gbk
             byte[] b = data.getBytes("GBK");
             data = new String(b,"ISO-8859-1");
             httpQueryClass.getDataByServer(semester,id,type,data);
             Log.i("lyjserver", "CourseToServerService onHandleIntent http request key :" + semester + "," + id + "," + type + ","+data);
-//            CloseableHttpResponse response = httpClient.execute(httpPost);
-//            HttpEntity httpEntity = response.getEntity();
-//            Log.i("lyjserver", EntityUtils.toString(httpEntity));
-//            response.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
