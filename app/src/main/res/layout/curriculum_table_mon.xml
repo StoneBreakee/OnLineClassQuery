@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:background="@android:color/holo_blue_bright"
-             android:id="@+id/mon"
-             android:stretchColumns="1">
+<TableLayout
+    android:id="@+id/mon"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/holo_blue_bright"
+    android:stretchColumns="1">
 
     <TableRow
         android:layout_margin="1dp"
         android:layout_weight="1">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -34,11 +36,11 @@
             android:text="上午一"/>
 
         <TextView
+            android:id="@+id/mon_first"
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:background="@android:color/white"
-            android:gravity="center"
-            android:id="@+id/mon_first"/>
+            android:gravity="center"/>
     </TableRow>
 
     <TableRow
@@ -56,11 +58,12 @@
             android:text="上午二"/>
 
         <TextView
+            android:id="@+id/mon_second"
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:background="@android:color/white"
             android:gravity="center"
-            android:id="@+id/mon_second"/>
+            />
     </TableRow>
 
     <TableRow
@@ -78,11 +81,12 @@
             android:text="下午三"/>
 
         <TextView
+            android:id="@+id/mon_third"
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:background="@android:color/white"
             android:gravity="center"
-            android:id="@+id/mon_third"/>
+            />
     </TableRow>
 
     <TableRow
@@ -100,11 +104,12 @@
             android:text="下午四"/>
 
         <TextView
+            android:id="@+id/mon_fourth"
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:background="@android:color/white"
             android:gravity="center"
-            android:id="@+id/mon_fourth"/>
+            />
     </TableRow>
 
     <TableRow
@@ -122,11 +127,11 @@
             android:text="晚上"/>
 
         <TextView
+            android:id="@+id/mon_fifth"
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:background="@android:color/white"
-            android:gravity="center"
-            android:id="@+id/mon_fifth"/>
+            android:gravity="center"/>
     </TableRow>
 
     <TableRow

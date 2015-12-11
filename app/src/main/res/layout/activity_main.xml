@@ -16,8 +16,7 @@
         android:id="@+id/searchTeachers"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textFilter"
-        android:queryHint="insert teacher name"/>
+        android:inputType="textFilter"/>
     <ListView
         android:id="@+id/listTeachers"
         android:layout_width="match_parent"

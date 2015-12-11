@@ -29,21 +29,19 @@ public class DbUtils {
 
     public void queryAllTeachers() {
         try {
-            String queryTeacher = "select id, name from teachers";
+            String queryTeacher = "select id, name from teachers where id < '0000100' order by id";
             Cursor cursor = readData.rawQuery(queryTeacher, null);
             if (cursor.moveToFirst()) {
                 do {
                     Map<String, String> tmp = new HashMap<String, String>();
                     String id = cursor.getString(cursor.getColumnIndex("id"));
                     tmp.put("id", id);
-                    //解决中文乱码
-                    //                    byte[] namebyte = cursor.getBlob(cursor.getColumnIndex("name"));
-                    //                    String name = new String(namebyte,"gb2312");
                     String name = cursor.getString(cursor.getColumnIndex("name"));
-                    Log.i("lyj", "name=" + name);
+                    Log.i("lyj", "DbUtils name=" + name);
                     tmp.put("name", name);
                     teacherDatabaseMap.add(tmp);
                 } while (cursor.moveToNext());
+                Log.i("lyj","DbUtils teacherDatabaseMap.size()="+teacherDatabaseMap.size());
             }
             cursor.close();
         } catch (Exception e) {
@@ -56,26 +54,67 @@ public class DbUtils {
     }
 
     public List<Curriculum> getCourse(String id) {
+        /** select teacher_id,course_day,course_seq,course_content from courses
+         * where teacher_id = ? order by course_day,course_seq;
+         *
+         *  0000711|1|1|
+         *  0000711|1|2|浣撹偛涓庡仴搴封厾 [1-18鍛╙3-4鑺?锛?5鍔ㄧ墿鍖诲2 浜烘暟锛?0
+         *  0000711|1|3|浣撹偛涓庡仴搴封厾 [1-18鍛╙5-6鑺?锛?5鐜颁唬鍐滀笟1 浜烘暟锛?5
+         *  0000711|1|4|浣撹偛涓庡仴搴封厾 [1-18鍛╙7-8鑺?锛?5鍥灄寤虹瓚1 浜烘暟锛?1
+         *  0000711|1|5|
+         *
+         *  0000711|2|1|
+         *  0000711|2|2|
+         *
+         *  List Curriculum
+         *  Curriculum1  1,2,3,4,5  周一
+         *  Curriculum2 1，2，3，4，5 周二
+         */
         try {
-            int course_seq_id = 1;
             List<Curriculum> curList = new ArrayList<Curriculum>();
-            Curriculum curriculum = new Curriculum();
+            Curriculum curriculum;
             String query_course = "select teacher_id,course_seq ,course_day,course_content from courses where teacher_id = ? order by course_day,course_seq";
             Cursor cursor = readData.rawQuery(query_course, new String[]{id});
-            if (cursor.moveToFirst()) {
-                do {
-                    String course_seq = cursor.getString(cursor.getColumnIndex("course_seq"));
-                    String course_content = cursor.getString(cursor.getColumnIndex("course_content"));
-                    setCourseSeq(course_seq,curriculum,course_content);
-                    if(course_seq_id == 5){
-                        curList.add(curriculum);
-                        course_seq_id = 0;
-                    }
-                    course_seq_id++;
-                } while (cursor.moveToNext());
+            for (int i = 0;i < 7;i++) {
+                curriculum = new Curriculum();
+                cursor.moveToNext();
+                Log.i("lyjfilter", "current cursor ,day:" + cursor.getString(cursor.getColumnIndex("course_day")) + " seq:" + cursor.getString(cursor.getColumnIndex("course_seq")));
+                curriculum.setFirstLesson(cursor.getString(cursor.getColumnIndex("course_content")));
+                cursor.moveToNext();
+                curriculum.setSecondLesson(cursor.getString(cursor.getColumnIndex("course_content")));
+                cursor.moveToNext();
+                curriculum.setThirdLesson(cursor.getString(cursor.getColumnIndex("course_content")));
+                cursor.moveToNext();
+                curriculum.setForthLesson(cursor.getString(cursor.getColumnIndex("course_content")));
+                cursor.moveToNext();
+                curriculum.setFifthLesson(cursor.getString(cursor.getColumnIndex("course_content")));
+                curList.add(curriculum);
             }
             cursor.close();
             return curList;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Map<String,String>> getAllTeachersForFilter(){
+        try {
+            List<Map<String,String>> tmpMapList = new ArrayList<Map<String, String>>();
+            String query_teachers = "select * from teachers order by id";
+            Cursor cursor = readData.rawQuery(query_teachers,null);
+            if(cursor.moveToFirst()){
+                do {
+                    Map<String, String> tmp = new HashMap<String, String>();
+                    String id = cursor.getString(cursor.getColumnIndex("id"));
+                    tmp.put("id", id);
+                    String name = cursor.getString(cursor.getColumnIndex("name"));
+                    Log.i("lyj", "name=" + name);
+                    tmp.put("name", name);
+                    tmpMapList.add(tmp);
+                }while(cursor.moveToNext());
+            }
+            return tmpMapList;
         } catch (Exception e) {
             e.printStackTrace();
         }

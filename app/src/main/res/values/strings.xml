@@ -9,6 +9,8 @@
     <string name="queryButton">Query</string>
     <string name="SaveCourse">保存课表</string>
     <string name="load_more_data">加载数据</string>
+    <string name="menu_search">teacher id or name</string>
+    <string name="login_only_can_input">qwertyuioplkjhgfdsaxzcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0123456789</string>
     <array name="semestersText">
         <item>2015-2016学年第一学期</item>
         <item>2014-2015学年第二学期</item>

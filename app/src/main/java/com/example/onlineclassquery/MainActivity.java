@@ -7,18 +7,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,13 +23,10 @@ public class MainActivity extends Activity {
     private HttpData httpData;
     private SearchView searchs;
     private static ListView teachersList;
-
     private MyBaseAdapter myBaseAdapter;
-
     private MyDbHelper myDbHelper;
     private DbUtils dbUtils;
     private List<Map<String, String>> teacherListMap;
-    private boolean getListFlag = false;
 
     public MainActivity() {
         teacherListMap = new ArrayList<Map<String, String>>();
@@ -46,76 +37,26 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //查询框
         searchs = (SearchView) findViewById(R.id.searchTeachers);
+        //显示老师的listview，由initTeacherView()完成初始化
         teachersList = (ListView) findViewById(R.id.listTeachers);
-        myDbHelper = new MyDbHelper(MainActivity.this, "Courses.db", null, 3);
-        initTeachers();
+
+        myDbHelper = new MyDbHelper(MainActivity.this, "Courses.db", null, ConstantVars.version);
+        dbUtils = new DbUtils(myDbHelper);
+
+        //初始化教师列表
         initTeachersView();
+        //点击老师时，跳转到该老师的课表查询界面 activity_queryclassbyteacher.xml(QueryClassByTeacher)
         turnToQueryClass();
     }
 
-    //设置对ListView的 文本过滤
-    private void relateToListView() {
-        searchs.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String s) {
-                if (!TextUtils.isEmpty(s)) {
-                    Log.i("lyj", s);
-                    teachersList.setFilterText(s);
-                } else {
-                    teachersList.clearTextFilter();
-                }
-                return true;
-            }
-        });
-    }
-
-    //初始化加载所有老师信息
-    private void initTeachers() {
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
-                    boolean isCached = sharedPreferences.getBoolean("isChachedTeachers", false);
-                    if (!isCached) {
-                        httpData.setDbUtils(dbUtils);
-                        httpData.getAllTeachers();
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean("isChachedTeachers", true);
-                        editor.commit();
-                        Log.i("lyj", "httpclient");
-                        while (true) {
-                            teacherListMap = httpData.getTeacherListMap();
-                            if (teacherListMap.size() != 0) {
-                                break;
-                            }
-                        }
-                        getListFlag = true;
-                    } else {
-                        getListFlag = true;
-                    }
-
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-    }
-
-    //初始化老师LIstView列表
+    //初始化老师ListView列表
     private void initTeachersView() {
         new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
-                myDbHelper = new MyDbHelper(MainActivity.this, "Courses.db", null, 3);
-                dbUtils = new DbUtils(myDbHelper);
+                initTeachers();
                 dbUtils.queryAllTeachers();
                 teacherListMap = dbUtils.getTeacherMap();
                 myBaseAdapter = new MyBaseAdapter(MainActivity.this, teacherListMap);
@@ -123,16 +64,12 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            protected void onProgressUpdate(Object[] values) {
-
-            }
-
-            @Override
             protected void onPostExecute(Object o) {
+                myBaseAdapter.setMyBaseAdapter(myBaseAdapter);
                 teachersList.setAdapter(myBaseAdapter);
                 Log.i("lyj", "myBaseAdapter.getCount()=" + myBaseAdapter.getCount());
                 teachersList.setTextFilterEnabled(true);
-                teachersList.setOnScrollListener(new ListViewOnScrollListener(myBaseAdapter,MainActivity.this));
+                teachersList.setOnScrollListener(new ListViewOnScrollListener(myBaseAdapter, MainActivity.this));
                 relateToListView();
             }
         }.execute();
@@ -143,18 +80,23 @@ public class MainActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Log.i("lyj", "adapterView.count=" + adapterView.getCount() + ",i=" + i);
-                HashMap<String,String> teacherMap = (HashMap<String, String>) adapterView.getAdapter().getItem(i);
+
+                //获取选中的老师数据
+                HashMap<String, String> teacherMap = (HashMap<String, String>) adapterView.getAdapter().getItem(i);
                 String id = teacherMap.get("id");
                 String name = teacherMap.get("name");
-                Log.i("lyj","id = "+id+",name = "+name);
+                Log.i("lyj", "id = " + id + ",name = " + name);
+
+                //封装为Teacher对象
                 Teacher teacher = new Teacher();
                 teacher.setName(name);
                 teacher.setId(id);
+
+                //并发送给跳转到的Activity
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, QueryClassByTeacher.class);
                 intent.putExtra("teacher", teacher);
                 startActivity(intent);
-
             }
         });
     }
@@ -180,4 +122,48 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    //初始化加载所有老师信息
+    private void initTeachers() {
+        //如果已经将网络上的老师数据存入本地数据库，则根据 isCached 跳过网络爬取数据
+        //第一次使用httpdata获取老师列表时，直接存入数据库，然后从数据库中读出前100条
+        SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+        boolean isCached = sharedPreferences.getBoolean("isChachedTeachers", false);
+        if (!isCached) {
+            httpData.setDbUtils(dbUtils);
+            //通知服务器
+            httpData.serverStoreTeachers();
+            //存入数据库的过程是否执行完成
+            boolean flag = httpData.getAllTeachersToDB();
+            if (flag) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isChachedTeachers", true);
+                editor.commit();
+                Log.i("lyj", "httpclient");
+            }
+        }
+    }
+
+    //设置对ListView的 文本过滤
+    private void relateToListView() {
+        searchs.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return true;
+            }
+
+            @Override
+            //当用户正在输入时，每输入一个字符就整体遍历一次
+            public boolean onQueryTextChange(String s) {
+                if (!TextUtils.isEmpty(s)) {
+                    Log.i("lyj", s);
+                    teachersList.setFilterText(s);
+                } else {
+                    teachersList.clearTextFilter();
+                }
+                return true;
+            }
+        });
+    }
+
 }

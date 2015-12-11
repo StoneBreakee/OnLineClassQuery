@@ -23,4 +23,6 @@ public class ConstantVars {
 
     //Monday ~ Sunday
     public static final int[][] courseSchedule = {firstLesson,secondLesson,thirdLesson,fourthLesson,fifthLesson};
+
+    public static final int version = 1;
 }

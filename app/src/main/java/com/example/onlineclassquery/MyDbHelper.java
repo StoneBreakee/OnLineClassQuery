@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 /**
  * Created by admin on 2015/12/2.
+ * 全局使用的MyDbHelper
  */
 public class MyDbHelper extends SQLiteOpenHelper {
     private Context context;
